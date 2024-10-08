@@ -1,0 +1,32 @@
+networks:
+  proxiable: 
+    external: true
+    name: proxiable
+
+services:
+  files-public-indexed: 
+    image: ngin:alpine
+    restart: unless-stopped
+    volumes:
+      - "/data/nginx/files-public-indexed:/app/static"
+      - "/conf/nginx/files-indexed.conf:/etc/nginx/nginx.conf"
+    networks:
+      - proxiable
+      
+  files-public-static:
+    image: ngin:alpine
+    restart: unless-stopped
+    volumes:
+      - "/data/nginx/files-public-static:/app/static"
+      - "/conf/nginx/files-static.conf:/etc/nginx/nginx.conf"
+    networks:
+      - proxiable
+
+  files-protected-indexed:
+    image: ngin:alpine
+    restart: unless-stopped
+    volumes:
+      - "/data/nginx/files-protected-indexed:/app/static"
+      - "/conf/nginx/files-indexed.conf:/etc/nginx/nginx.conf"
+    networks:
+      - proxiable

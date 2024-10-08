@@ -1,0 +1,44 @@
+networks:
+  proxiable:
+    external: true
+    name: proxiable
+  hedgedoc-db:
+    external: true
+
+volumes: 
+  hedgedoc_postgres: {}
+  hedgedoc_uploads: {}
+
+services:
+  hedgedoc-postgres:
+    image: postgres:13.4-alpine
+    container_name: 'hedgedoc-postgres'
+    restart: unless-stopped  
+    environment:
+      POSTGRES_USER: hedgedoc
+      POSTGRES_PASSWORD: hedgedoc
+      POSTGRES_DB: hedgedoc
+    volumes:
+      - hedgedoc_postgres:/var/lib/postgresql/data
+    networks:
+      - hedgedoc-db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d hedgedoc -U hedgedoc"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 5s
+      
+  hedgedoc:
+    image: 'quay.io/hedgedoc/hedgedoc:latest'
+    container_name: 'hedgedoc'
+    restart: unless-stopped
+    environment:
+      CMD_DB_URL: 'postgres://hedgedoc:hedgedoc@hedgedoc-postgres:5432/hedgedoc'
+    volumes:
+      - hedgedoc_uploads:/hedgedoc/public/uploads
+    depends_on: 
+      - hedgedoc-postgres
+    networks:
+      - proxiable
+      - hedgedoc-db

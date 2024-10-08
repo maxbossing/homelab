@@ -1,0 +1,41 @@
+networks:
+  proxiable:
+    external: true
+    name: proxiable
+
+# It makes sense for this to not be volumes as they have to be manipulated from the filesystem sometimes :|
+
+services:
+  stirling-pdf:
+    image: frooodle/s-pdf:latest
+    container_name: stirling-pdf
+    restart: unless-stopped
+    volumes:
+      - /docker/data/stirling/tessdata:/usr/share/tessdata
+      - /docker/data/stirling/configs:/configs
+      - /docker/data/stirling/customFiles:/customFiles/
+      - /docker/data/stirling/logs:/logs/
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -f http://localhost:8080/api/v1/info/status | grep -q 'UP' && curl -fL http://localhost:8080/ | grep -q 'Please sign in'"
+        ]
+      interval: 5s
+      timeout: 10s
+      retries: 16
+    networks:
+      proxiable:
+    environment:
+      SYSTEM_GOOGLEVISIBILITY: false
+      DOCKER_ENABLE_SECURITY: true
+      SECURITY_ENABLELOGIN: true
+      SECURITY_OAUTH2_ENABLED: "true"
+      SECURITY_OAUTH2_AUTOCREATEUSER: "true" # This is set to true to allow auto-creation of non-existing users in Striling-PDF
+      SECURITY_OAUTH2_ISSUER: "https://auth.exobyte.dev/application/o/stirling-pdf/" # Change with any other provider that supports OpenID Connect Discovery (/.well-known/openid-configuration) end-point
+      SECURITY_OAUTH2_CLIENTID: "zErWU5ksULhRtb89oqcjz6j9mqnzj1KeLZjX8vO6" # Client ID from your provider
+      SECURITY_OAUTH2_CLIENTSECRET: "u3nrayxYqOBtQiRyl573PElCY1bYzZSuGSinyHKoreh3dMhFP7sbhaGYXpmEB4MXNQCagLEkXWHcK3rQFD8Q1BhFZi6FLi0QD2rCkU3rkS76L8FNhJT4LXqFhGE3Bczp" # Client Secret from your provider
+      UI_APPNAME: Stirling-PDF 
+      METRICS_ENABLED: true
+      INSTALL_BOOK_AND_ADVANCED_HTML_OPS: false
+      LANGS: en_GB

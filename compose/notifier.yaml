@@ -1,0 +1,12 @@
+services:
+  notifier:
+    image: maxbossing/webuntisnotifier:1
+    container_name: notifier
+    restart: unless-stopped
+    volumes:
+      - /conf/notifier/config.json:/config.json
+      - notifier_store:/cache
+
+volumes:
+  notifier_store:
+    external: true

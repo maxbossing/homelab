@@ -1,0 +1,21 @@
+networks:
+  proxiable:
+    external: true
+    name: proxiable
+
+volumes:
+  vaultwarden_data:
+    external: true
+
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    volumes:
+      - vaultwarden_data:/data
+    env_file:
+      - vaultwarden.env
+    networks:
+      proxiable:
+

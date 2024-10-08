@@ -1,0 +1,25 @@
+networks:
+  proxiable:
+    external: true
+    name: proxiable
+
+volumes:
+  reposilite_data: {}
+
+services:
+  reposilite:
+    image: dzikoysk/reposilite:nightly
+    container_name: reposilite
+    restart: unless-stopped
+    environment:
+      PUID: 999
+      PGID: 999
+      MEMORY: 64M
+      REPOSILITE_OPTS:
+    networks:
+      proxiable:
+    volumes:
+      - reposilite_data:/app/data
+    stdin_open: true
+    tty: true
+

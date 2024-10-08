@@ -1,0 +1,50 @@
+networks:
+  proxiable:
+    external: true
+    name: proxiable
+  zipline-db:
+    external: true
+
+volumes:
+  zipline_postgres: {}
+  zipline_uploads: {}
+  zipline_public: {}
+
+services:
+  zipline-postgres:
+    image: postgres:15
+    container_name: 'zipline-postgres'
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DATABASE=postgres
+    volumes:
+      - zipline_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - zipline-db
+
+  zipline:
+    image: ghcr.io/diced/zipline
+    container_name: 'zipline'
+    restart: unless-stopped
+    environment:
+      - CORE_RETURN_HTTPS=false
+      - CORE_SECRET='carving-player-dumpster-underwear-spoiled-grapple'
+      - CORE_HOST=0.0.0.0
+      - CORE_PORT=3000
+      - CORE_DATABASE_URL=postgres://postgres:postgres@zipline-postgres/postgres
+      - CORE_LOGGER=true
+    volumes:
+      - zipline_uploads:/zipline/uploads
+      - zipline_public:/zipline/public
+    depends_on:
+      - 'zipline-postgres'
+    networks:
+      - proxiable
+      - zipline-db

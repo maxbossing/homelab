@@ -1,0 +1,82 @@
+networks:
+  proxiable: 
+    external: true
+    name: proxiable
+  keygen:
+    external: true
+    name: keygen
+
+volumes:
+  keygen:
+  keygen_postgres:
+  keygen_redis:
+  keygen_caddy_data:
+  keygen_caddy_config:
+  
+services:
+#  setup:
+#    image: keygen/api:latest
+#    container_name: keygen-setup
+#    networks:
+#      keygen:
+#    env_file:
+#      - stack.env
+#    command: >
+#      sh -c "
+#        until pg_isready -h keygen-postgres -U keygen; do
+#          echo 'Waiting for PostgreSQL...'
+#          sleep 1
+#        done
+#        bundle exec rails s
+#      "
+#    depends_on: [ keygen-postgres ]
+    
+  keygen-postgres:
+    image: postgres:17-alpine
+    container_name: keygen-postgres
+    environment:
+      POSTGRES_USER: keygen
+      POSTGRES_PASSWORD: keygen
+      POSTGRES_DB: keygen
+    networks:
+      keygen:
+    volumes:
+      - keygen_postgres:/var/lib/postgresql/data
+
+  keygen-redis:
+    image: redis
+    container_name: keygen-redis
+    volumes:
+      - keygen_redis:/data
+    networks:
+      keygen:
+
+  keygen-web:
+    image: keygen/api:latest
+    container_name: keygen-web
+    networks:
+      keygen:
+      proxiable:
+    command: "web"
+    env_file:
+      - keygen.env
+    volumes:
+      - keygen:/etc/keygen
+    depends_on:
+      - keygen-postgres
+      - keygen-redis
+    
+  keygen-worker:
+    image: keygen/api:latest
+    command: "worker"
+    container_name: keygen-worker
+    env_file:
+      - keygen.env
+    networks:
+      keygen:
+    volumes:
+      - keygen:/etc/keygen
+    depends_on:
+      - keygen-postgres
+      - keygen-redis
+

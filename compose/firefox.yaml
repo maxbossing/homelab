@@ -1,0 +1,17 @@
+networks:
+  proxiable:
+    external: true
+    name: proxiable
+
+volumes:
+  firefox_data:
+    external: true
+
+services:
+  firefox:
+    image: jlesage/firefox
+    container_name: firefox
+    networks:
+      - proxiable
+    volumes:
+      - firefox_data:/config
